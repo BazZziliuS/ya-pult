@@ -103,6 +103,8 @@ export function useEntityActions(deps: UseEntityActionsDeps): UseEntityActionsRe
       } catch (err) {
         const appError = decodeError((err as Error).message)
         if (appError.kind === 'auth') onAuthError()
+        else if (appError.kind === 'scenarioInactive')
+          pushToast(t('toast.scenarioInactive', { name: scenario.name }), 'error')
         else
           pushToast(t('toast.scenarioError', { name: scenario.name, message: appError.message }), 'error', {
             label: t('error.retryShort'),

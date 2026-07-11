@@ -105,10 +105,20 @@ export class YandexIotApi {
   }
 
   async runScenario(scenarioId: string): Promise<void> {
-    await this.request<void>(`/scenarios/${encodeURIComponent(scenarioId)}/actions`, {
-      method: 'POST',
-      body: ''
-    })
+    try {
+      await this.request<void>(`/scenarios/${encodeURIComponent(scenarioId)}/actions`, {
+        method: 'POST',
+        body: ''
+      })
+    } catch (err) {
+      // Яндекс отдаёт 400 "scenario is not active", когда сценарий выключен
+      // тумблером в приложении «Дом с Алисой» — это не сбой сети/авторизации,
+      // отдельный kind нужен, чтобы renderer показал понятную причину, а не сырой JSON.
+      if (err instanceof ApiError && err.httpStatus === 400 && /scenario is not active/i.test(err.message)) {
+        throw new ApiError('scenarioInactive', err.message, 400)
+      }
+      throw err
+    }
   }
 
   /**

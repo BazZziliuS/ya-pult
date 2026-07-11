@@ -84,7 +84,8 @@ const ru = {
     connectionRestored: 'Соединение восстановлено',
     longNoConnection: 'Долго нет связи с сервером умного дома',
     scenarioLaunched: 'Сценарий «{{name}}» запущен',
-    scenarioError: 'Сценарий «{{name}}»: {{message}}'
+    scenarioError: 'Сценарий «{{name}}»: {{message}}',
+    scenarioInactive: 'Сценарий «{{name}}» отключён — включите его в приложении «Дом с Алисой»'
   },
   notify: {
     connectionLostTitle: 'ЯПульт — нет связи',
@@ -105,6 +106,7 @@ const ru = {
       network: 'Нет соединения',
       timeout: 'Сервер не отвечает',
       api: 'Ошибка сервера',
+      scenarioInactive: 'Сценарий отключён',
       unknown: 'Не удалось загрузить дом'
     }
   },
@@ -283,7 +285,8 @@ const en = {
     connectionRestored: 'Connection restored',
     longNoConnection: 'Still unable to reach the smart home server',
     scenarioLaunched: 'Scenario “{{name}}” started',
-    scenarioError: 'Scenario “{{name}}”: {{message}}'
+    scenarioError: 'Scenario “{{name}}”: {{message}}',
+    scenarioInactive: 'Scenario “{{name}}” is disabled — enable it in the Yandex Smart Home app'
   },
   notify: {
     connectionLostTitle: 'YaPult — connection lost',
@@ -304,6 +307,7 @@ const en = {
       network: 'No connection',
       timeout: 'Server is not responding',
       api: 'Server error',
+      scenarioInactive: 'Scenario disabled',
       unknown: 'Failed to load your home'
     }
   },

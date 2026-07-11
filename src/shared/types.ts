@@ -220,7 +220,7 @@ export interface ActionResult {
 // Ошибки, единый формат для показа в UI
 // ---------------------------------------------------------------------------
 
-export type AppErrorKind = 'auth' | 'network' | 'timeout' | 'api' | 'unknown'
+export type AppErrorKind = 'auth' | 'network' | 'timeout' | 'api' | 'scenarioInactive' | 'unknown'
 
 export interface AppError {
   kind: AppErrorKind

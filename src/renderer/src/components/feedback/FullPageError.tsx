@@ -12,6 +12,7 @@ const ICON_BY_KIND: Record<AppError['kind'], string> = {
   network: '📡',
   timeout: '⏱️',
   api: '⚠️',
+  scenarioInactive: '⏸',
   unknown: '❓'
 }
 
