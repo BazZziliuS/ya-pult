@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+}
+
+/* Радужный слайдер выбора оттенка (Hue) для цветных ламп — HeroUI не даёт
+   готового цветового пикера, поэтому это обычный <input type="range">
+   с кастомной раскраской трека/ползунка. */
+.hue-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 10px;
+  border-radius: 9999px;
+  background: linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000);
+  outline: none;
+  cursor: pointer;
+}
+
+.hue-slider:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.hue-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background: #fff;
+  border: 2px solid rgba(0, 0, 0, 0.25);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  margin-top: -4px;
+}
+
+.hue-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background: #fff;
+  border: 2px solid rgba(0, 0, 0, 0.25);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+}
+
+.hue-slider::-moz-range-track {
+  height: 10px;
+  border-radius: 9999px;
+  background: transparent;
+}
