@@ -52,6 +52,7 @@
     "files": [
       "out/**/*"
     ],
+    "artifactName": "YaPult-${version}-${os}-${arch}.${ext}",
     "win": {
       "target": [
         "nsis",
@@ -66,7 +67,11 @@
     },
     "nsis": {
       "oneClick": false,
-      "allowToChangeInstallationDirectory": true
+      "allowToChangeInstallationDirectory": true,
+      "artifactName": "YaPult-Setup-${version}.${ext}"
+    },
+    "portable": {
+      "artifactName": "YaPult-${version}-portable.${ext}"
     }
   }
 }
