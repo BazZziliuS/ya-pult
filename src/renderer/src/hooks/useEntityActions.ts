@@ -11,6 +11,7 @@ export interface UseEntityActionsDeps {
   notify: (title: string, body: string, urgency?: 'normal' | 'critical') => void
   onAuthError: () => void
   recordToggle: (kind: 'device' | 'group', id: string, name: string, isOn: boolean) => void
+  recordScenarioRun: (id: string, name: string, icon?: string) => void
   t: Translate
 }
 
@@ -32,7 +33,7 @@ export interface UseEntityActionsResult {
  * командой), уведомление ОС по завершении сценария.
  */
 export function useEntityActions(deps: UseEntityActionsDeps): UseEntityActionsResult {
-  const { homeInfoRef, pushToast, notify, onAuthError, recordToggle, t } = deps
+  const { homeInfoRef, pushToast, notify, onAuthError, recordToggle, recordScenarioRun, t } = deps
   const [runningScenarioId, setRunningScenarioId] = useState<string | null>(null)
 
   /** Пополняет список «последних действий» в трее — только для включения/выключения, только по успеху */
@@ -98,6 +99,7 @@ export function useEntityActions(deps: UseEntityActionsDeps): UseEntityActionsRe
       setRunningScenarioId(scenario.id)
       try {
         await window.api.runScenario(scenario.id)
+        recordScenarioRun(scenario.id, scenario.name, scenario.icon)
         pushToast(t('toast.scenarioLaunched', { name: scenario.name }), 'success')
         notify(t('notify.scenarioDoneTitle'), t('notify.scenarioDoneBody', { name: scenario.name }))
       } catch (err) {
@@ -114,7 +116,7 @@ export function useEntityActions(deps: UseEntityActionsDeps): UseEntityActionsRe
         setRunningScenarioId(null)
       }
     },
-    [pushToast, t, notify, onAuthError]
+    [pushToast, t, notify, onAuthError, recordScenarioRun]
   )
 
   return { handleDeviceAction, handleGroupAction, handleRunScenario, runningScenarioId }

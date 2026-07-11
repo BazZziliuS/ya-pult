@@ -309,15 +309,19 @@ export interface NotifyPayload {
 export type Lang = 'ru' | 'en'
 
 /**
- * Элемент списка «последних действий» в меню трея — устройство или группа,
- * у которых недавно переключали on_off. Main хранит и показывает их
- * независимо от того, открыто ли главное окно.
+ * Элемент списка «последних действий» в меню трея — устройство/группа,
+ * у которых недавно переключали on_off, либо запущенный сценарий. Main
+ * хранит и показывает их независимо от того, открыто ли главное окно.
+ * У сценариев нет on/off-состояния, поэтому `isOn` присутствует только
+ * для kind 'device' | 'group'.
  */
 export interface TrayMruItem {
   id: string
-  kind: 'device' | 'group'
+  kind: 'device' | 'group' | 'scenario'
   name: string
-  isOn: boolean
+  isOn?: boolean
+  /** Эмодзи-иконка сценария из Yandex API (см. Scenario['icon']) — только для kind 'scenario' */
+  icon?: string
 }
 
 /**

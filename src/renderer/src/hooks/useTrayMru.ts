@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import type { HomeInfo, TrayMruItem } from '@shared/types'
 
 const STORAGE_KEY = 'yapult-tray-mru'
-const MAX_ITEMS = 5
+const MAX_ITEMS = 3
 
 function loadStored(): TrayMruItem[] {
   try {
@@ -34,6 +34,7 @@ function findOnOffState(homeInfo: HomeInfo, kind: 'device' | 'group', id: string
  */
 export function useTrayMru(homeInfo: HomeInfo | null): {
   recordToggle: (kind: 'device' | 'group', id: string, name: string, isOn: boolean) => void
+  recordScenarioRun: (id: string, name: string, icon?: string) => void
 } {
   const [items, setItems] = useState<TrayMruItem[]>(loadStored)
 
@@ -46,11 +47,22 @@ export function useTrayMru(homeInfo: HomeInfo | null): {
     })
   }, [])
 
+  const recordScenarioRun = useCallback((id: string, name: string, icon?: string) => {
+    setItems((prev) => {
+      const rest = prev.filter((i) => !(i.id === id && i.kind === 'scenario'))
+      const newItem: TrayMruItem = { id, kind: 'scenario', name, icon }
+      const next = [newItem, ...rest].slice(0, MAX_ITEMS)
+      persist(next)
+      return next
+    })
+  }, [])
+
   useEffect(() => {
     if (!homeInfo) return
     setItems((prev) => {
       let changed = false
       const next = prev.map((item) => {
+        if (item.kind === 'scenario') return item
         const fresh = findOnOffState(homeInfo, item.kind, item.id)
         if (fresh === undefined || fresh === item.isOn) return item
         changed = true
@@ -66,5 +78,5 @@ export function useTrayMru(homeInfo: HomeInfo | null): {
     window.api.syncTrayMenu(items).catch(() => {})
   }, [items])
 
-  return { recordToggle }
+  return { recordToggle, recordScenarioRun }
 }

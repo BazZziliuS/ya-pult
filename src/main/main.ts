@@ -24,7 +24,7 @@ let pendingUpdateInfo: UpdateAvailableInfo | null = null
 
 const api = new YandexIotApi(() => (isTokenValid(currentToken) ? currentToken.accessToken : null))
 
-const { registerIpcHandlers, performTrayToggle } = createIpcController({
+const { registerIpcHandlers, performTrayToggle, performTrayScenario } = createIpcController({
   api,
   getMainWindow: () => mainWindow,
   getToken: () => currentToken,
@@ -132,6 +132,7 @@ app.whenReady().then(() => {
       app.quit()
     },
     performToggle: performTrayToggle,
+    performScenario: performTrayScenario,
     notifyError: (title, body) => notifyUser({ title, body, urgency: 'normal' }),
     getLang: () => currentLang,
     onActionPerformed: () => mainWindow?.webContents.send(IPC_CHANNELS.TRAY_ACTION_PERFORMED)

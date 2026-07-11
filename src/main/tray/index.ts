@@ -2,9 +2,25 @@ import { Menu, Tray, nativeImage, type MenuItemConstructorOptions } from 'electr
 import { TRAY_ICON_DATA_URL } from './icon'
 import type { ActionResult, Lang, TrayMruItem } from '@shared/types'
 
+// Электрон-меню трея не показывает произвольные растровые иконки пунктов
+// стабильно на всех платформах, поэтому статус/тип пункта — эмодзи в label,
+// а не MenuItemConstructorOptions.icon.
+const ON_ICON = '🟢'
+const OFF_ICON = '⚪'
+const SCENARIO_FALLBACK_ICON = '▶️'
+
 const TRAY_STRINGS: Record<
   Lang,
-  { show: string; quit: string; noRecent: string; turnOn: string; turnOff: string; tooltip: string; actionFailedTitle: string }
+  {
+    show: string
+    quit: string
+    noRecent: string
+    turnOn: string
+    turnOff: string
+    run: string
+    tooltip: string
+    actionFailedTitle: string
+  }
 > = {
   ru: {
     show: 'Показать ЯПульт',
@@ -12,6 +28,7 @@ const TRAY_STRINGS: Record<
     noRecent: 'Нет недавних действий',
     turnOn: 'Включить',
     turnOff: 'Выключить',
+    run: 'Запустить',
     tooltip: 'ЯПульт — умный дом',
     actionFailedTitle: 'ЯПульт — не удалось выполнить действие'
   },
@@ -21,6 +38,7 @@ const TRAY_STRINGS: Record<
     noRecent: 'No recent actions',
     turnOn: 'Turn on',
     turnOff: 'Turn off',
+    run: 'Run',
     tooltip: 'YaPult — smart home',
     actionFailedTitle: 'YaPult — action failed'
   }
@@ -30,6 +48,7 @@ export interface TrayDeps {
   showWindow: () => void
   quitApp: () => void
   performToggle: (item: TrayMruItem) => Promise<ActionResult>
+  performScenario: (item: TrayMruItem) => Promise<void>
   notifyError: (title: string, body: string) => void
   getLang: () => Lang
   onActionPerformed: () => void
@@ -70,7 +89,7 @@ export class AppTray {
     if (!this.tray) return
     const strings = TRAY_STRINGS[this.deps.getLang()]
     const template: MenuItemConstructorOptions[] = [
-      { label: strings.show, click: () => this.deps.showWindow() },
+      { label: `🏠 ${strings.show}`, click: () => this.deps.showWindow() },
       { type: 'separator' }
     ]
 
@@ -78,16 +97,26 @@ export class AppTray {
       template.push({ label: strings.noRecent, enabled: false })
     } else {
       for (const item of this.items) {
+        if (item.kind === 'scenario') {
+          const scenarioIcon = item.icon || SCENARIO_FALLBACK_ICON
+          template.push({
+            label: `${scenarioIcon} ${strings.run}: ${item.name}`,
+            enabled: !this.busyIds.has(this.busyKey(item)),
+            click: () => void this.handleScenarioRun(item)
+          })
+          continue
+        }
+        const stateIcon = item.isOn ? ON_ICON : OFF_ICON
         const actionLabel = item.isOn ? strings.turnOff : strings.turnOn
         template.push({
-          label: `${actionLabel}: ${item.name}`,
+          label: `${stateIcon} ${actionLabel}: ${item.name}`,
           enabled: !this.busyIds.has(this.busyKey(item)),
           click: () => void this.handleToggle(item)
         })
       }
     }
 
-    template.push({ type: 'separator' }, { label: strings.quit, click: () => this.deps.quitApp() })
+    template.push({ type: 'separator' }, { label: `🚪 ${strings.quit}`, click: () => this.deps.quitApp() })
 
     this.tray.setContextMenu(Menu.buildFromTemplate(template))
     this.tray.setToolTip(strings.tooltip)
@@ -115,12 +144,27 @@ export class AppTray {
       if (result.success) {
         this.deps.onActionPerformed()
       } else {
-        this.setItemOn(item.id, item.kind, item.isOn)
+        this.setItemOn(item.id, item.kind, !!item.isOn)
         const strings = TRAY_STRINGS[this.deps.getLang()]
         this.deps.notifyError(strings.actionFailedTitle, result.errorMessage ?? item.name)
       }
     } catch (err) {
-      this.setItemOn(item.id, item.kind, item.isOn)
+      this.setItemOn(item.id, item.kind, !!item.isOn)
+      const strings = TRAY_STRINGS[this.deps.getLang()]
+      this.deps.notifyError(strings.actionFailedTitle, (err as Error).message)
+    } finally {
+      this.busyIds.delete(this.busyKey(item))
+      this.rebuild()
+    }
+  }
+
+  private async handleScenarioRun(item: TrayMruItem): Promise<void> {
+    this.busyIds.add(this.busyKey(item))
+    this.rebuild()
+    try {
+      await this.deps.performScenario(item)
+      this.deps.onActionPerformed()
+    } catch (err) {
       const strings = TRAY_STRINGS[this.deps.getLang()]
       this.deps.notifyError(strings.actionFailedTitle, (err as Error).message)
     } finally {

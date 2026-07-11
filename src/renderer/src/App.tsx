@@ -76,7 +76,7 @@ export default function App(): JSX.Element {
   refreshRef.current = refresh
   homeInfoRef.current = homeInfo
 
-  const { recordToggle } = useTrayMru(homeInfo)
+  const { recordToggle, recordScenarioRun } = useTrayMru(homeInfo)
 
   const {
     households,
@@ -100,6 +100,7 @@ export default function App(): JSX.Element {
     notify,
     onAuthError: auth.handleAuthError,
     recordToggle,
+    recordScenarioRun,
     t
   })
 

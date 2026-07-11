@@ -66,6 +66,8 @@ export interface IpcController {
   registerIpcHandlers: () => void
   /** Клик по пункту меню трея: включить/выключить конкретное устройство или группу целиком. */
   performTrayToggle: (item: TrayMruItem) => Promise<ActionResult>
+  /** Клик по сценарию в меню трея. */
+  performTrayScenario: (item: TrayMruItem) => Promise<void>
 }
 
 /**
@@ -124,6 +126,10 @@ export function createIpcController(deps: IpcDeps): IpcController {
         item.kind === 'group' ? await deps.api.sendGroupAction(item.id, action) : await deps.api.sendDeviceAction(item.id, action)
       return parseActionResult(response)
     })
+  }
+
+  async function performTrayScenario(item: TrayMruItem): Promise<void> {
+    return withAuthGuardInternal(() => deps.api.runScenario(item.id))
   }
 
   function registerIpcHandlers(): void {
@@ -190,5 +196,5 @@ export function createIpcController(deps: IpcDeps): IpcController {
     })
   }
 
-  return { registerIpcHandlers, performTrayToggle }
+  return { registerIpcHandlers, performTrayToggle, performTrayScenario }
 }
