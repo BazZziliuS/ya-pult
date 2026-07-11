@@ -29,4 +29,14 @@ describe('encodeError / decodeError', () => {
     const raw = JSON.stringify({ foo: 'bar' })
     expect(decodeError(raw)).toEqual({ kind: 'unknown', message: raw })
   })
+
+  it('decodeError разбирает JSON, обёрнутый Electron в "Error invoking remote method \'...\': Error: <json>"', () => {
+    const encoded = encodeError(new ApiError('scenarioInactive', 'Ошибка API (400): scenario is not active', 400))
+    const wrapped = `Error invoking remote method 'scenario:run': Error: ${encoded}`
+    expect(decodeError(wrapped)).toEqual({
+      kind: 'scenarioInactive',
+      message: 'Ошибка API (400): scenario is not active',
+      httpStatus: 400
+    })
+  })
 })

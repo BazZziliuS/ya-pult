@@ -257,9 +257,18 @@ export function encodeError(err: unknown): string {
   return JSON.stringify({ kind: 'unknown', message } satisfies AppError)
 }
 
+/**
+ * Electron сам оборачивает message брошенной ошибки в
+ * `Error invoking remote method '<channel>': ${error.toString()}` (вызывает
+ * .toString(), а не просто копирует .message) — на renderer-стороне до нашего
+ * JSON доходит с этим префиксом спереди. Поэтому ищем первую `{` и парсим
+ * начиная с неё, а не весь rawMessage целиком.
+ */
 export function decodeError(rawMessage: string): AppError {
+  const jsonStart = rawMessage.indexOf('{')
+  const candidate = jsonStart === -1 ? rawMessage : rawMessage.slice(jsonStart)
   try {
-    const parsed = JSON.parse(rawMessage)
+    const parsed = JSON.parse(candidate)
     if (parsed && typeof parsed.kind === 'string' && typeof parsed.message === 'string') {
       return parsed as AppError
     }
